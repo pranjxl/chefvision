@@ -1,0 +1,4 @@
+# Heavy ML dependencies, kept out of requirements.txt so the web app installs fast.
+# If you have an NVIDIA GPU, install a CUDA build of torch first (see https://pytorch.org/get-started/locally/),
+# then run: pip install -r requirements-ml.txt
+sentence-transformers>=3.0

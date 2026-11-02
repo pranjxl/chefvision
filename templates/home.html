@@ -1,0 +1,7 @@
+{% extends "base.html" %}
+{% block content %}
+  <h1>What can I cook with what I have?</h1>
+  <p class="lead">Snap your ingredients, correct what we detected, and get recipes with a generated picture of the dish.</p>
+  <p><a class="btn" href="{% url 'cook' %}">Cook with my ingredients</a><a class="btn ghost" href="{% url 'recipe_list' %}">Browse {{ recipe_count }} recipes</a></p>
+  <p><small><a href="{% url 'health' %}">health check</a></small></p>
+{% endblock %}

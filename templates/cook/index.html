@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Cook with my ingredients · ChefVision{% endblock %}
+{% block content %}
+  <h1>Cook with my ingredients</h1>
+  <p class="lead">Tell us what you have. We rank recipes by how much of each one you can already make, and show exactly what is missing.</p>
+
+  <form class="filters cook-form" action="{% url 'cook' %}" method="get"
+        hx-get="{% url 'cook' %}" hx-target="#results" hx-push-url="true"
+        hx-trigger="submit, change, input changed delay:500ms from:#id_ingredients" hx-sync="this:replace">
+    <div class="row">
+      {{ form.ingredients }}
+      <button class="submit" type="submit">Find recipes</button>
+    </div>
+    <div class="row">
+      {{ form.diet }} {{ form.max_minutes }} {{ form.staples }}
+      <label class="check">{{ form.high_protein }} {{ form.high_protein.label }}</label>
+      <label class="check">{{ form.snack }} {{ form.snack.label }}</label>
+    </div>
+    <p class="note">Separate ingredients with commas. Photo, camera and video input are coming in the next phase.</p>
+  </form>
+
+  <section id="results" aria-live="polite">
+    {% include "cook/_results.html" %}
+  </section>
+{% endblock %}

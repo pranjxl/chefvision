@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}ChefVision{% endblock %}</title>
+  <script src="https://unpkg.com/htmx.org@2.0.3"></script>
+  <style>
+    :root {
+      --bg:#faf7f2; --surface:#ffffff; --ink:#1f1b16; --muted:#6b645b; --line:#e7e0d5;
+      --accent:#c2410c; --accent-soft:#fdeee4; --veg:#1b873f; --nonveg:#b3261e;
+      --radius:14px;
+    }
+    * { box-sizing: border-box; }
+    body { margin:0; font-family: system-ui, -apple-system, "Segoe UI", sans-serif; background:var(--bg); color:var(--ink); line-height:1.5; }
+    a { color:inherit; }
+    header, main { max-width: 1040px; margin: 0 auto; padding: 1.25rem; }
+    header { display:flex; justify-content:space-between; align-items:center; gap:1rem; flex-wrap:wrap; }
+    .brand { font-weight:800; color:var(--accent); text-decoration:none; font-size:1.3rem; letter-spacing:-.02em; }
+    nav a, nav span { margin-left:1.25rem; color:var(--muted); text-decoration:none; font-size:.95rem; }
+    nav a:hover { color:var(--ink); }
+    nav .soon { opacity:.6; cursor:default; }
+    nav .soon small { background:var(--accent-soft); color:var(--accent); border-radius:99px; padding:.1rem .45rem; margin-left:.35rem; font-size:.7rem; }
+    h1 { font-size:clamp(1.7rem, 4vw, 2.4rem); letter-spacing:-.025em; line-height:1.15; margin:.2rem 0 .6rem; }
+    .lead { color:var(--muted); max-width:56ch; margin:0 0 1.25rem; }
+    .btn { display:inline-block; background:var(--accent); color:#fff; text-decoration:none; padding:.65rem 1.1rem; border-radius:10px; font-weight:600; }
+    .btn:hover { filter:brightness(1.08); }
+
+    /* filters */
+    .filters { background:var(--surface); border:1px solid var(--line); border-radius:var(--radius); padding:1rem; display:grid; gap:.75rem; }
+    .filters .row { display:flex; gap:.6rem; flex-wrap:wrap; align-items:center; }
+    .filters input[type=text], .filters select { font:inherit; padding:.55rem .7rem; border:1px solid var(--line); border-radius:10px; background:#fff; color:var(--ink); }
+    .filters input[type=text] { flex:1 1 280px; }
+    .filters input:focus-visible, .filters select:focus-visible, .btn:focus-visible, a:focus-visible { outline:2px solid var(--accent); outline-offset:2px; }
+    .check { display:inline-flex; gap:.4rem; align-items:center; padding:.4rem .7rem; border:1px solid var(--line); border-radius:99px; cursor:pointer; user-select:none; }
+    .check:has(input:checked) { background:var(--accent-soft); border-color:var(--accent); color:var(--accent); }
+    .filters.htmx-request ~ #results { opacity:.55; transition:opacity .15s; }
+
+    /* results */
+    .count { color:var(--muted); margin:1.1rem 0 .6rem; font-size:.95rem; }
+    .grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(230px, 1fr)); gap:1rem; }
+    .card { background:var(--surface); border:1px solid var(--line); border-radius:var(--radius); padding:1rem; text-decoration:none; display:flex; flex-direction:column; gap:.55rem; transition:transform .12s, box-shadow .12s; }
+    .card:hover { transform:translateY(-2px); box-shadow:0 6px 18px rgba(31,27,22,.08); }
+    .card h3 { margin:0; font-size:1.02rem; line-height:1.3; }
+    .meta { display:flex; gap:.8rem; color:var(--muted); font-size:.85rem; flex-wrap:wrap; }
+    .chips { display:flex; gap:.35rem; flex-wrap:wrap; margin-top:auto; }
+    .chip { background:var(--accent-soft); color:var(--accent); border-radius:99px; padding:.1rem .55rem; font-size:.75rem; }
+    .chip.plain { background:#f0ebe2; color:var(--muted); }
+    .diet-mark { display:inline-grid; place-items:center; width:16px; height:16px; border:2px solid var(--veg); border-radius:3px; flex:none; }
+    .diet-mark::after { content:""; width:7px; height:7px; border-radius:50%; background:var(--veg); }
+    .diet-mark.nonveg { border-color:var(--nonveg); }
+    .diet-mark.nonveg::after { background:var(--nonveg); }
+    .title-row { display:flex; gap:.5rem; align-items:flex-start; }
+    .title-row .diet-mark { margin-top:.2rem; }
+    .empty { text-align:center; padding:3rem 1rem; color:var(--muted); background:var(--surface); border:1px dashed var(--line); border-radius:var(--radius); }
+    .pager { display:flex; justify-content:center; align-items:center; gap:1rem; margin:1.5rem 0; color:var(--muted); }
+    .pager a { padding:.4rem .9rem; border:1px solid var(--line); border-radius:10px; text-decoration:none; background:var(--surface); }
+
+    /* detail */
+    .back { color:var(--muted); text-decoration:none; font-size:.9rem; }
+    .detail { display:grid; grid-template-columns: 1fr; gap:1.25rem; margin-top:1rem; }
+    @media (min-width: 820px) { .detail { grid-template-columns: 1.6fr 1fr; align-items:start; } }
+    .panel { background:var(--surface); border:1px solid var(--line); border-radius:var(--radius); padding:1.1rem 1.25rem; }
+    .panel h2 { font-size:1.05rem; margin:0 0 .6rem; }
+    .panel ul, .panel ol { margin:0; padding-left:1.25rem; }
+    .panel li { margin:.35rem 0; }
+    .nutrition { width:100%; border-collapse:collapse; font-size:.92rem; }
+    .nutrition td { padding:.3rem 0; border-bottom:1px solid var(--line); }
+    .nutrition td:last-child { text-align:right; color:var(--muted); }
+    .stack { display:grid; gap:1.25rem; }
+
+    /* cook with my ingredients */
+    .btn.ghost { background:transparent; color:var(--accent); border:1px solid var(--accent); margin-left:.5rem; }
+    .cook-form .submit { background:var(--accent); color:#fff; border:0; border-radius:10px; padding:.6rem 1.2rem; font:inherit; font-weight:600; cursor:pointer; }
+    .cook-form .submit:hover { filter:brightness(1.08); }
+    .note { color:var(--muted); font-size:.88rem; margin:.4rem 0 0; }
+    .note.warn { color:#8a5a00; background:#fff6dd; border:1px solid #f0dca4; border-radius:10px; padding:.5rem .75rem; }
+    .pantry { display:flex; gap:.35rem; flex-wrap:wrap; margin:1rem 0 .2rem; align-items:center; color:var(--muted); font-size:.9rem; }
+    .chip.have { background:#e6f4ea; color:var(--veg); }
+    .chip.miss { background:#fdecea; color:var(--nonveg); }
+    .bar { height:6px; border-radius:99px; background:#efe8dc; overflow:hidden; }
+    .bar > span { display:block; height:100%; background:var(--veg); }
+    .match-line { display:flex; justify-content:space-between; font-size:.85rem; color:var(--muted); }
+    .match-line strong { color:var(--ink); }
+    .chips.wrap { margin-top:0; }
+    .card .label { font-size:.75rem; text-transform:uppercase; letter-spacing:.04em; color:var(--muted); }
+  </style>
+</head>
+<body>
+  <header>
+    <a class="brand" href="{% url 'home' %}">ChefVision</a>
+    <nav>
+      <a href="{% url 'recipe_list' %}">Recipes</a>
+      <a href="{% url 'cook' %}">Cook with my ingredients</a>
+    </nav>
+  </header>
+  <main>{% block content %}{% endblock %}</main>
+</body>
+</html>

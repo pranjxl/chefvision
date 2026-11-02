@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}Recipes · ChefVision{% endblock %}
+{% block content %}
+  <h1>Recipes</h1>
+  <p class="lead">Search by dish or ingredient, then narrow by diet, protein, snacks or time.</p>
+
+  <form class="filters" action="{% url 'recipe_list' %}" method="get"
+        hx-get="{% url 'recipe_list' %}" hx-target="#results" hx-push-url="true"
+        hx-trigger="change, input changed delay:300ms from:#id_q" hx-sync="this:replace">
+    <div class="row">{{ form.q }}</div>
+    <div class="row">
+      {{ form.diet }} {{ form.max_minutes }} {{ form.sort }}
+      <label class="check">{{ form.high_protein }} {{ form.high_protein.label }}</label>
+      <label class="check">{{ form.snack }} {{ form.snack.label }}</label>
+      <noscript><button class="btn" type="submit">Apply</button></noscript>
+    </div>
+  </form>
+
+  <section id="results" aria-live="polite">
+    {% include "recipes/_results.html" %}
+  </section>
+{% endblock %}

@@ -1,0 +1,45 @@
+<p class="count">{{ total }} recipe{{ total|pluralize }}</p>
+
+{% if page.object_list %}
+  <div class="grid">
+    {% for r in page.object_list %}
+      <a class="card" href="{% url 'recipe_detail' r.pk %}">
+        <div class="title-row">
+          <span class="diet-mark{% if not r.is_veg %} nonveg{% endif %}" title="{{ r.get_diet_display }}"></span>
+          <h3>{{ r.name }}</h3>
+        </div>
+        <div class="meta">
+          <span>{{ r.minutes }} min</span>
+          {% if r.protein_g is not None %}<span>{{ r.protein_g|floatformat:0 }} g protein</span>{% endif %}
+          {% if r.calories %}<span>{{ r.calories|floatformat:0 }} kcal</span>{% endif %}
+        </div>
+        <div class="chips">
+          {% if r.is_high_protein %}<span class="chip">High protein</span>{% endif %}
+          {% if r.is_snack %}<span class="chip">Snack</span>{% endif %}
+          {% if r.diet == "egg" %}<span class="chip plain">Contains egg</span>{% endif %}
+        </div>
+      </a>
+    {% endfor %}
+  </div>
+
+  {% if page.has_other_pages %}
+    <nav class="pager" aria-label="Pagination">
+      {% if page.has_previous %}
+        <a href="?{% if querystring %}{{ querystring }}&{% endif %}page={{ page.previous_page_number }}"
+           hx-get="{% url 'recipe_list' %}?{% if querystring %}{{ querystring }}&{% endif %}page={{ page.previous_page_number }}"
+           hx-target="#results" hx-push-url="true">&larr; Previous</a>
+      {% endif %}
+      <span>Page {{ page.number }} of {{ page.paginator.num_pages }}</span>
+      {% if page.has_next %}
+        <a href="?{% if querystring %}{{ querystring }}&{% endif %}page={{ page.next_page_number }}"
+           hx-get="{% url 'recipe_list' %}?{% if querystring %}{{ querystring }}&{% endif %}page={{ page.next_page_number }}"
+           hx-target="#results" hx-push-url="true">Next &rarr;</a>
+      {% endif %}
+    </nav>
+  {% endif %}
+{% else %}
+  <div class="empty">
+    <strong>No recipes match those filters.</strong>
+    <p>Try removing a filter or searching for a simpler ingredient.</p>
+  </div>
+{% endif %}

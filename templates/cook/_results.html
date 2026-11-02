@@ -1,0 +1,57 @@
+{% if result %}
+  <div class="pantry">
+    <span>Your ingredients:</span>
+    {% for name in result.ingredients %}<span class="chip have">{{ name }}</span>{% endfor %}
+  </div>
+  {% if not result.semantic_used %}
+    <p class="note warn">Semantic ranking is unavailable right now, so results are ranked by ingredient overlap only.</p>
+  {% endif %}
+
+  {% if result.items %}
+    <p class="count">{{ result.candidates }} recipe{{ result.candidates|pluralize }} use at least one of these. Showing the best {{ result.items|length }}.</p>
+    <div class="grid">
+      {% for item in result.items %}
+        <a class="card" href="{% url 'recipe_detail' item.recipe.pk %}">
+          <div class="title-row">
+            <span class="diet-mark{% if not item.recipe.is_veg %} nonveg{% endif %}" title="{{ item.recipe.get_diet_display }}"></span>
+            <h3>{{ item.recipe.name }}</h3>
+          </div>
+          <div class="meta">
+            <span>{{ item.recipe.minutes }} min</span>
+            {% if item.recipe.protein_g is not None %}<span>{{ item.recipe.protein_g|floatformat:0 }} g protein</span>{% endif %}
+          </div>
+          <div>
+            <div class="match-line">
+              <span>You have <strong>{{ item.have|length }} of {{ item.considered }}</strong></span>
+              <span>{{ item.coverage_pct }}% match</span>
+            </div>
+            <div class="bar" role="img" aria-label="{{ item.coverage_pct }} percent of ingredients available"><span style="width:{{ item.coverage_pct }}%"></span></div>
+          </div>
+          {% if item.missing %}
+            <div>
+              <div class="label">Missing</div>
+              <div class="chips wrap">
+                {% for name in item.missing|slice:":6" %}<span class="chip miss">{{ name }}</span>{% endfor %}
+                {% if item.missing|length > 6 %}<span class="chip plain">+{{ item.missing|length|add:"-6" }} more</span>{% endif %}
+              </div>
+            </div>
+          {% else %}
+            <div class="chips"><span class="chip have">You have everything</span></div>
+          {% endif %}
+        </a>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="empty">
+      <strong>No recipes use those ingredients with these filters.</strong>
+      <p>Try adding more ingredients, or removing a filter such as diet or time.</p>
+    </div>
+  {% endif %}
+{% elif searched %}
+  <div class="empty"><strong>Add at least one ingredient to get started.</strong></div>
+{% else %}
+  <div class="empty">
+    <strong>What is in your kitchen?</strong>
+    <p>Try “chicken, tomato, rice” or “paneer, spinach, onion”.</p>
+  </div>
+{% endif %}

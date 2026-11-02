@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}{{ recipe.name }} · ChefVision{% endblock %}
+{% block content %}
+  <a class="back" href="{% url 'recipe_list' %}">&larr; All recipes</a>
+
+  <div class="title-row" style="margin-top:.75rem">
+    <span class="diet-mark{% if not recipe.is_veg %} nonveg{% endif %}" title="{{ recipe.get_diet_display }}" style="margin-top:.55rem"></span>
+    <h1>{{ recipe.name }}</h1>
+  </div>
+  <div class="meta">
+    <span>{{ recipe.minutes }} min</span>
+    <span>{{ recipe.get_diet_display }}</span>
+    <span>{{ recipe.get_source_display }} recipe</span>
+  </div>
+  {% if recipe.description %}<p class="lead" style="margin-top:.8rem">{{ recipe.description }}</p>{% endif %}
+
+  <div class="detail">
+    <div class="stack">
+      <section class="panel">
+        <h2>Ingredients</h2>
+        <ul>{% for line in recipe.ingredients_raw %}<li>{{ line }}</li>{% endfor %}</ul>
+      </section>
+      <section class="panel">
+        <h2>Method</h2>
+        <ol>{% for step in recipe.steps %}<li>{{ step }}</li>{% endfor %}</ol>
+      </section>
+    </div>
+    <aside class="stack">
+      {% if recipe.nutrition_facts %}
+        <section class="panel">
+          <h2>Nutrition</h2>
+          <table class="nutrition">
+            {% for label, value in recipe.nutrition_facts.items %}<tr><td>{{ label }}</td><td>{{ value }}</td></tr>{% endfor %}
+          </table>
+        </section>
+      {% endif %}
+      {% if recipe.display_tags %}
+        <section class="panel">
+          <h2>Tags</h2>
+          <div class="chips" style="margin-top:0">{% for t in recipe.display_tags %}<span class="chip plain">{{ t }}</span>{% endfor %}</div>
+        </section>
+      {% endif %}
+    </aside>
+  </div>
+{% endblock %}
